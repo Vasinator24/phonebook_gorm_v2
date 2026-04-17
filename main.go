@@ -7,9 +7,9 @@ import (
 	controller "phonebook_gorm/controler"
 	"phonebook_gorm/db"
 	"phonebook_gorm/logger"
-	"phonebook_gorm/server"
+	"phonebook_gorm/repository"
+	server "phonebook_gorm/server"
 	"phonebook_gorm/services"
-	"phonebook_gorm/users"
 
 	"github.com/joho/godotenv"
 	"go.uber.org/fx"
@@ -46,7 +46,7 @@ func runServer() {
 	app := fx.New(
 		fx.Provide(
 			db.NewDB,
-			users.NewService,
+			repository.NewService,
 			services.NewUserService,
 			controller.NewUserController,
 			logger.NewLogger,
