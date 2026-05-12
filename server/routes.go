@@ -9,19 +9,45 @@ import (
 
 func RegisterRoutes(mux *http.ServeMux, userCtrl *controller.UserController) {
 
-	mux.HandleFunc("/users", userCtrl.GetUsers)
-	//mux.HandleFunc("/users/create", userCtrl.CreateUser)
-	//mux.HandleFunc("/users/update", userCtrl.UpdateUser)
-	//mux.HandleFunc("/users/delete", userCtrl.DeleteUser)
+	phoneCtrl := controller.NewPhoneController(userCtrl.GetService())
 
-	mux.HandleFunc("/login", userCtrl.Login)
-	// protected route
-	//mux.HandleFunc("/users", auth.AuthMiddleware(userCtrl.GetUsers))
-	mux.HandleFunc("/users/create", auth.AuthMiddleware(userCtrl.CreateUser))
-	mux.HandleFunc("/users/update", auth.AuthMiddleware(userCtrl.UpdateUser))
-	mux.HandleFunc("/users/delete", auth.AuthMiddleware(userCtrl.DeleteUser))
+	// LOGIN
+	mux.HandleFunc("/login", Cors(userCtrl.Login))
 
-	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+	// USERS
+	mux.HandleFunc("/users", Cors(auth.AuthMiddleware(userCtrl.GetUsers)))
+	mux.HandleFunc("/users/create", Cors(userCtrl.CreateUser))
+	mux.HandleFunc("/users/delete",
+		Cors(auth.AuthMiddleware(auth.AdminOnly(userCtrl.DeleteUser))),
+	)
+
+	mux.HandleFunc("/users/update",
+		Cors(auth.AuthMiddleware(auth.AdminOnly(userCtrl.UpdateUser))),
+	)
+
+	// PHONES
+	mux.HandleFunc("/phones", Cors(auth.AuthMiddleware(phoneCtrl.GetPhonesByUser)))
+	mux.HandleFunc("/phones/create", Cors(auth.AuthMiddleware(phoneCtrl.CreatePhone)))
+	mux.HandleFunc("/phones/delete", Cors(auth.AuthMiddleware(phoneCtrl.DeletePhone)))
+
+	// HEALTH
+	mux.HandleFunc("/health", Cors(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("OK"))
-	})
+	}))
+}
+
+func Cors(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		next(w, r)
+	}
 }

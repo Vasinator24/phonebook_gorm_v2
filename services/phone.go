@@ -18,3 +18,7 @@ func (s *UserService) GetPhonesByUser(userID uint) ([]db.Phone, error) {
 func (s *UserService) DeletePhone(phoneID uint) error {
 	return s.repo.DeletePhone(phoneID)
 }
+
+func (s *UserService) GetPhoneByID(id uint) (*db.Phone, error) {
+	return s.repo.GetPhoneByID(id)
+}
