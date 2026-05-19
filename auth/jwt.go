@@ -15,9 +15,9 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func GenerateToken(userID uint, email string, role string) (string, error) {
+func GenerateToken(user_id uint, email string, role string) (string, error) {
 	claims := Claims{
-		UserID: userID,
+		UserID: user_id,
 		Email:  email,
 		Role:   role,
 		RegisteredClaims: jwt.RegisteredClaims{

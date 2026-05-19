@@ -178,129 +178,129 @@ function App() {
     const totalPages = Math.ceil(users.length / USERS_PER_PAGE);
 
     const styles: { [key: string]: React.CSSProperties } = {
-    container: {
-        padding: 20,
-        fontFamily: "Arial",
-        background: "#f4f6f8",
-        minHeight: "100vh"
-    },
+        container: {
+            padding: 20,
+            fontFamily: "Arial",
+            background: "#f4f6f8",
+            minHeight: "100vh"
+        },
 
-    header: {
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: 20,
-        padding: 10,
-        background: "#fff",
-        borderRadius: 10
-    },
+        header: {
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 20,
+            padding: 10,
+            background: "#fff",
+            borderRadius: 10
+        },
 
-    grid: {
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-        gap: 20
-    },
+        grid: {
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 20
+        },
 
-    card: {
-        background: "#fff",
-        padding: 20,
-        borderRadius: 12,
-        boxShadow: "0 4px 12px rgba(0,0,0,0.08)"
-    },
+        card: {
+            background: "#fff",
+            padding: 20,
+            borderRadius: 12,
+            boxShadow: "0 4px 12px rgba(0,0,0,0.08)"
+        },
 
-    table: {
-        width: "100%",
-        borderCollapse: "collapse"
-    },
+        table: {
+            width: "100%",
+            borderCollapse: "collapse"
+        },
 
-    row: {
-        cursor: "pointer",
-        transition: "0.2s",
-    },
+        row: {
+            cursor: "pointer",
+            transition: "0.2s",
+        },
 
-    input: {
-        flex: 1,
-        padding: 10,
-        borderRadius: 8,
-        border: "1px solid #ddd"
-    },
+        input: {
+            flex: 1,
+            padding: 10,
+            borderRadius: 8,
+            border: "1px solid #ddd"
+        },
 
-    button: {
-        padding: "8px 12px",
-        borderRadius: 6,
-        border: "none",
-        cursor: "pointer"
-    },
+        button: {
+            padding: "8px 12px",
+            borderRadius: 6,
+            border: "none",
+            cursor: "pointer"
+        },
 
-    addBtn: {
-        padding: "8px 12px",
-        background: "#2ecc71",
-        color: "white",
-        border: "none",
-        borderRadius: 6,
-        cursor: "pointer"
-    },
+        addBtn: {
+            padding: "8px 12px",
+            background: "#2ecc71",
+            color: "white",
+            border: "none",
+            borderRadius: 6,
+            cursor: "pointer"
+        },
 
-    deleteBtn: {
-        padding: "6px 10px",
-        background: "#e74c3c",
-        color: "white",
-        border: "none",
-        borderRadius: 6,
-        cursor: "pointer"
-    },
+        deleteBtn: {
+            padding: "6px 10px",
+            background: "#e74c3c",
+            color: "white",
+            border: "none",
+            borderRadius: 6,
+            cursor: "pointer"
+        },
 
-    editBtn: {
-        padding: "6px 10px",
-        background: "#3498db",
-        color: "white",
-        border: "none",
-        borderRadius: 6,
-        cursor: "pointer",
-        marginRight: 5
-    },
+        editBtn: {
+            padding: "6px 10px",
+            background: "#3498db",
+            color: "white",
+            border: "none",
+            borderRadius: 6,
+            cursor: "pointer",
+            marginRight: 5
+        },
 
-    dangerBtn: {
-        padding: "6px 10px",
-        background: "#e74c3c",
-        color: "white",
-        border: "none",
-        borderRadius: 6,
-        cursor: "pointer"
-    },
+        dangerBtn: {
+            padding: "6px 10px",
+            background: "#e74c3c",
+            color: "white",
+            border: "none",
+            borderRadius: 6,
+            cursor: "pointer"
+        },
 
-    phoneRow: {
-        display: "flex",
-        justifyContent: "space-between",
-        padding: "6px 0"
-    },
+        phoneRow: {
+            display: "flex",
+            justifyContent: "space-between",
+            padding: "6px 0"
+        },
 
-    pagination: {
-        marginTop: 10,
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center"
-    },
+        pagination: {
+            marginTop: 10,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center"
+        },
 
-    modalOverlay: {
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        background: "rgba(0,0,0,0.5)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center"
-    },
+        modalOverlay: {
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            background: "rgba(0,0,0,0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center"
+        },
 
-    modal: {
-        background: "white",
-        padding: 20,
-        borderRadius: 12,
-        width: 300
-    }
-};
+        modal: {
+            background: "white",
+            padding: 20,
+            borderRadius: 12,
+            width: 300
+        }
+    };
     if (!isLoggedIn) {
         return (
             <div style={styles.authContainer}>

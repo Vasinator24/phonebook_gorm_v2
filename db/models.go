@@ -12,6 +12,6 @@ type User struct {
 
 type Phone struct {
 	ID     uint   `json:"id"`
-	UserID uint   `json:"user_id"`
+	UserID uint   `json:"userID"`
 	Number string `json:"number"`
 }

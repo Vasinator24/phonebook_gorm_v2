@@ -83,6 +83,11 @@ func (s *Service) CreatePhone(phone *db.Phone) error {
 	return s.DB.Create(phone).Error
 }
 
+// editPhone
+func (s *Service) UpdatePhone(phone *db.Phone) error {
+	return s.DB.Save(phone).Error
+}
+
 // GetPhonesByUser
 func (s *Service) GetPhonesByUser(userID uint) ([]db.Phone, error) {
 	var phones []db.Phone
