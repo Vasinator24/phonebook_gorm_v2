@@ -25,12 +25,16 @@ func RegisterRoutes(mux *http.ServeMux, userCtrl *controller.UserController) {
 		Cors(http.HandlerFunc(userCtrl.CreateUser)),
 	)
 
+	mux.Handle("/users/admin-create",
+		Cors(auth.AuthMiddleware(auth.AdminOnly(http.HandlerFunc(userCtrl.AdminCreateUser)))),
+	)
+
 	mux.Handle("/users/delete",
 		Cors(auth.AuthMiddleware(auth.AdminOnly(http.HandlerFunc(userCtrl.DeleteUser)))),
 	)
 
 	mux.Handle("/users/update",
-		Cors(auth.AuthMiddleware(auth.AdminOnly(http.HandlerFunc(userCtrl.UpdateUser)))),
+		Cors(auth.AuthMiddleware(http.HandlerFunc(userCtrl.UpdateUser))),
 	)
 
 	// PHONES
@@ -62,8 +66,8 @@ func Cors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 
 		if r.Method == "OPTIONS" {
 			w.WriteHeader(http.StatusOK)

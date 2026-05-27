@@ -40,9 +40,9 @@ func (s *UserService) CreateUser(user *db.User) error {
 	return s.repo.CreateUser(user)
 }
 
-// UpdateUser обновява user
-func (s *UserService) UpdateUser(user *db.User) error {
-	return s.repo.UpdateUser(user)
+// UpdateUser обновява само позволените user полета
+func (s *UserService) UpdateUser(id string, names string, email string) error {
+	return s.repo.UpdateUser(id, names, email)
 }
 
 // DeleteUser изтрива user по ID

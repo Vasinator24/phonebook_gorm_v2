@@ -11,7 +11,6 @@ import (
 type contextKey string
 
 const UserKey = contextKey("user")
-const secret = "my_secret_key"
 
 func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -50,17 +49,13 @@ func GetUserFromContext(r *http.Request) *Claims {
 func AdminOnly(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		tokenStr := strings.Replace(r.Header.Get("Authorization"), "Bearer ", "", 1)
+		claims := GetUserFromContext(r)
+		if claims == nil {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
 
-		token, _ := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
-			return []byte(secret), nil
-		})
-
-		claims := token.Claims.(jwt.MapClaims)
-
-		role := claims["role"].(string)
-
-		if role != "admin" {
+		if claims.Role != "admin" {
 			http.Error(w, "forbidden", http.StatusForbidden)
 			return
 		}
