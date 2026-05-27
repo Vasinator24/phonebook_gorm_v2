@@ -92,13 +92,15 @@ func (c *UserController) GetUsers(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// POST /users/create
-func (c *UserController) CreateUser(w http.ResponseWriter, r *http.Request) {
-
+func (c *UserController) createUser(w http.ResponseWriter, r *http.Request, allowRole bool) {
 	c.log.Debug.Info("CreateUser request received")
 
 	var user db.User
 	json.NewDecoder(r.Body).Decode(&user)
+
+	if !allowRole || user.Role == "" {
+		user.Role = "user"
+	}
 
 	c.log.Info.Info("Creating user started")
 
@@ -112,6 +114,16 @@ func (c *UserController) CreateUser(w http.ResponseWriter, r *http.Request) {
 	c.log.Info.Info("User created successfully")
 
 	json.NewEncoder(w).Encode(user)
+}
+
+// POST /users/create
+func (c *UserController) CreateUser(w http.ResponseWriter, r *http.Request) {
+	c.createUser(w, r, false)
+}
+
+// POST /users/admin-create
+func (c *UserController) AdminCreateUser(w http.ResponseWriter, r *http.Request) {
+	c.createUser(w, r, true)
 }
 
 // PUT /users/update
@@ -150,11 +162,10 @@ func (c *UserController) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// IMPORTANT SAFETY RULE
 	user.ID = uint(id)
 
 	// update
-	err = c.service.UpdateUser(&user)
+	err = c.service.UpdateUser(idStr, user.Names, user.Email)
 	if err != nil {
 		c.log.Error.Error("failed to update user")
 		http.Error(w, err.Error(), http.StatusInternalServerError)

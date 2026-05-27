@@ -58,8 +58,13 @@ func (s *Service) CreateUser(user *db.User) error {
 }
 
 // UpdateUser
-func (s *Service) UpdateUser(user *db.User) error {
-	return s.DB.Save(user).Error
+func (s *Service) UpdateUser(id string, names string, email string) error {
+	return s.DB.Model(&db.User{}).
+		Where("id = ?", id).
+		Updates(map[string]interface{}{
+			"names": names,
+			"email": email,
+		}).Error
 }
 
 // DeleteUser
@@ -70,7 +75,7 @@ func (s *Service) DeleteUser(userID uint) error {
 func (s *Service) GetUserByEmail(email string) (*db.User, error) {
 	var user db.User
 
-	err := s.DB.Where("email = ?", email).First(&user).Error
+	err := s.DB.Where("email = ? OR username = ?", email, email).First(&user).Error
 	if err != nil {
 		return nil, err
 	}

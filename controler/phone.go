@@ -31,6 +31,7 @@ func (pc *PhoneController) CreatePhone(w http.ResponseWriter, r *http.Request) {
 
 	// REQUEST BODY
 	var req struct {
+		UserID uint   `json:"user_id"`
 		Number string `json:"number"`
 	}
 
@@ -40,9 +41,19 @@ func (pc *PhoneController) CreatePhone(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// CREATE PHONE FROM TOKEN USER
+	targetUserID := claims.UserID
+	if claims.Role == "admin" && req.UserID != 0 {
+		targetUserID = req.UserID
+	}
+
+	if claims.Role != "admin" && req.UserID != 0 && req.UserID != claims.UserID {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+
+	// CREATE PHONE FOR TARGET USER
 	phone := db.Phone{
-		UserID: claims.UserID,
+		UserID: targetUserID,
 		Number: req.Number,
 	}
 
@@ -113,6 +124,11 @@ func (pc *PhoneController) UpdatePhone(w http.ResponseWriter, r *http.Request) {
 // GET PHONES BY USER
 
 func (pc *PhoneController) GetPhonesByUser(w http.ResponseWriter, r *http.Request) {
+	claims := auth.GetUserFromContext(r)
+	if claims == nil {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
 
 	userIDStr := r.URL.Query().Get("user_id")
 
