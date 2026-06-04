@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"phonebook_gorm/auth"
 	"phonebook_gorm/db"
 	"phonebook_gorm/services"
 )
@@ -22,13 +21,6 @@ func NewPhoneController(s *services.UserService) *PhoneController {
 
 func (pc *PhoneController) CreatePhone(w http.ResponseWriter, r *http.Request) {
 
-	// AUTH
-	claims := auth.GetUserFromContext(r)
-	if claims == nil {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
-		return
-	}
-
 	// REQUEST BODY
 	var req struct {
 		UserID uint   `json:"user_id"`
@@ -41,19 +33,14 @@ func (pc *PhoneController) CreatePhone(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	targetUserID := claims.UserID
-	if claims.Role == "admin" && req.UserID != 0 {
-		targetUserID = req.UserID
-	}
-
-	if claims.Role != "admin" && req.UserID != 0 && req.UserID != claims.UserID {
-		http.Error(w, "forbidden", http.StatusForbidden)
+	if req.UserID == 0 {
+		http.Error(w, "user_id is required", http.StatusBadRequest)
 		return
 	}
 
 	// CREATE PHONE FOR TARGET USER
 	phone := db.Phone{
-		UserID: targetUserID,
+		UserID: req.UserID,
 		Number: req.Number,
 	}
 
@@ -71,12 +58,6 @@ func (pc *PhoneController) CreatePhone(w http.ResponseWriter, r *http.Request) {
 
 func (pc *PhoneController) UpdatePhone(w http.ResponseWriter, r *http.Request) {
 
-	claims := auth.GetUserFromContext(r)
-	if claims == nil {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
-		return
-	}
-
 	idStr := r.URL.Query().Get("id")
 
 	id, err := strconv.Atoi(idStr)
@@ -92,14 +73,9 @@ func (pc *PhoneController) UpdatePhone(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// AUTHORIZATION
-	if claims.Role != "admin" && claims.UserID != phone.UserID {
-		http.Error(w, "forbidden", http.StatusForbidden)
-		return
-	}
-
 	// REQUEST BODY
 	var req struct {
+		UserID uint   `json:"user_id"`
 		Number string `json:"number"`
 	}
 
@@ -109,7 +85,13 @@ func (pc *PhoneController) UpdatePhone(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if req.UserID == 0 {
+		http.Error(w, "user_id is required", http.StatusBadRequest)
+		return
+	}
+
 	// UPDATE
+	phone.UserID = req.UserID
 	phone.Number = req.Number
 
 	err = pc.service.UpdatePhone(phone)
@@ -124,12 +106,6 @@ func (pc *PhoneController) UpdatePhone(w http.ResponseWriter, r *http.Request) {
 // GET PHONES BY USER
 
 func (pc *PhoneController) GetPhonesByUser(w http.ResponseWriter, r *http.Request) {
-	claims := auth.GetUserFromContext(r)
-	if claims == nil {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
-		return
-	}
-
 	userIDStr := r.URL.Query().Get("user_id")
 
 	userID, err := strconv.Atoi(userIDStr)
@@ -151,12 +127,6 @@ func (pc *PhoneController) GetPhonesByUser(w http.ResponseWriter, r *http.Reques
 
 func (pc *PhoneController) DeletePhone(w http.ResponseWriter, r *http.Request) {
 
-	claims := auth.GetUserFromContext(r)
-	if claims == nil {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
-		return
-	}
-
 	idStr := r.URL.Query().Get("id")
 
 	id, err := strconv.Atoi(idStr)
@@ -166,15 +136,9 @@ func (pc *PhoneController) DeletePhone(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// GET PHONE
-	phone, err := pc.service.GetPhoneByID(uint(id))
+	_, err = pc.service.GetPhoneByID(uint(id))
 	if err != nil {
 		http.Error(w, "phone not found", http.StatusNotFound)
-		return
-	}
-
-	// AUTHORIZATION
-	if claims.Role != "admin" && claims.UserID != phone.UserID {
-		http.Error(w, "forbidden", http.StatusForbidden)
 		return
 	}
 

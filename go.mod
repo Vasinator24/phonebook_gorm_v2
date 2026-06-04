@@ -3,11 +3,9 @@ module phonebook_gorm
 go 1.25.0
 
 require (
-	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/joho/godotenv v1.5.1
 	go.uber.org/fx v1.24.0
 	go.uber.org/zap v1.26.0
-	golang.org/x/crypto v0.51.0
 	gorm.io/driver/mysql v1.6.0
 	gorm.io/gorm v1.31.1
 )
