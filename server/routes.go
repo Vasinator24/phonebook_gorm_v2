@@ -3,7 +3,6 @@ package server
 import (
 	"net/http"
 
-	"phonebook_gorm/auth"
 	controller "phonebook_gorm/controler"
 )
 
@@ -11,47 +10,38 @@ func RegisterRoutes(mux *http.ServeMux, userCtrl *controller.UserController) {
 
 	phoneCtrl := controller.NewPhoneController(userCtrl.GetService())
 
-	// LOGIN
-	mux.Handle("/login",
-		Cors(http.HandlerFunc(userCtrl.Login)),
-	)
-
 	// USERS
 	mux.Handle("/users",
-		Cors(auth.AuthMiddleware(http.HandlerFunc(userCtrl.GetUsers))),
+		Cors(http.HandlerFunc(userCtrl.GetUsers)),
 	)
 
 	mux.Handle("/users/create",
 		Cors(http.HandlerFunc(userCtrl.CreateUser)),
 	)
 
-	mux.Handle("/users/admin-create",
-		Cors(auth.AuthMiddleware(auth.AdminOnly(http.HandlerFunc(userCtrl.AdminCreateUser)))),
-	)
-
 	mux.Handle("/users/delete",
-		Cors(auth.AuthMiddleware(auth.AdminOnly(http.HandlerFunc(userCtrl.DeleteUser)))),
+		Cors(http.HandlerFunc(userCtrl.DeleteUser)),
 	)
 
 	mux.Handle("/users/update",
-		Cors(auth.AuthMiddleware(http.HandlerFunc(userCtrl.UpdateUser))),
+		Cors(http.HandlerFunc(userCtrl.UpdateUser)),
 	)
 
 	// PHONES
 	mux.Handle("/phones",
-		Cors(auth.AuthMiddleware(http.HandlerFunc(phoneCtrl.GetPhonesByUser))),
+		Cors(http.HandlerFunc(phoneCtrl.GetPhonesByUser)),
 	)
 
 	mux.Handle("/phones/create",
-		Cors(auth.AuthMiddleware(http.HandlerFunc(phoneCtrl.CreatePhone))),
+		Cors(http.HandlerFunc(phoneCtrl.CreatePhone)),
 	)
 
 	mux.Handle("/phones/delete",
-		Cors(auth.AuthMiddleware(http.HandlerFunc(phoneCtrl.DeletePhone))),
+		Cors(http.HandlerFunc(phoneCtrl.DeletePhone)),
 	)
 
 	mux.Handle("/phones/update",
-		Cors(auth.AuthMiddleware(http.HandlerFunc(phoneCtrl.UpdatePhone))),
+		Cors(http.HandlerFunc(phoneCtrl.UpdatePhone)),
 	)
 
 	// HEALTH

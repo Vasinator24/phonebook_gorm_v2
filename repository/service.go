@@ -90,7 +90,12 @@ func (s *Service) CreatePhone(phone *db.Phone) error {
 
 // editPhone
 func (s *Service) UpdatePhone(phone *db.Phone) error {
-	return s.DB.Save(phone).Error
+	return s.DB.Model(&db.Phone{}).
+		Where("id = ?", phone.ID).
+		Updates(map[string]interface{}{
+			"number":  phone.Number,
+			"user_id": phone.UserID,
+		}).Error
 }
 
 // GetPhonesByUser
