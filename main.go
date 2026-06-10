@@ -49,6 +49,7 @@ func runServer() {
 			repository.NewService,
 			services.NewUserService,
 			controller.NewUserController,
+			controller.NewPhoneController,
 			logger.NewLogger,
 		),
 		fx.Invoke(

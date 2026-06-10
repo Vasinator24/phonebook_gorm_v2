@@ -6,10 +6,11 @@ import (
 	controller "phonebook_gorm/controler"
 )
 
-func RegisterRoutes(mux *http.ServeMux, userCtrl *controller.UserController) {
-
-	phoneCtrl := controller.NewPhoneController(userCtrl.GetService())
-
+func RegisterRoutes(
+	mux *http.ServeMux,
+	userCtrl *controller.UserController,
+	phoneCtrl *controller.PhoneController,
+) {
 	// USERS
 	mux.Handle("/users",
 		Cors(http.HandlerFunc(userCtrl.GetUsers)),
@@ -47,6 +48,7 @@ func RegisterRoutes(mux *http.ServeMux, userCtrl *controller.UserController) {
 	// HEALTH
 	mux.Handle("/health",
 		Cors(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
 			w.Write([]byte("OK"))
 		})),
 	)
