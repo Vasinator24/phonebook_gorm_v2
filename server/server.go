@@ -4,18 +4,39 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"os"
+	"strings"
+
 	controller "phonebook_gorm/controler"
 
 	"go.uber.org/fx"
 )
 
-func StartServer(lc fx.Lifecycle, userCtrl *controller.UserController) {
+func getServerAddr() string {
+	port := strings.TrimSpace(os.Getenv("PORT"))
+	if port == "" {
+		port = "8080"
+	}
+
+	if strings.HasPrefix(port, ":") {
+		return port
+	}
+
+	return ":" + port
+}
+
+func StartServer(
+	lc fx.Lifecycle,
+	userCtrl *controller.UserController,
+	phoneCtrl *controller.PhoneController,
+) {
 
 	mux := http.NewServeMux()
-	RegisterRoutes(mux, userCtrl)
+	RegisterRoutes(mux, userCtrl, phoneCtrl)
+	addr := getServerAddr()
 
 	server := &http.Server{
-		Addr:    ":8080",
+		Addr:    addr,
 		Handler: mux,
 	}
 
@@ -26,7 +47,7 @@ func StartServer(lc fx.Lifecycle, userCtrl *controller.UserController) {
 					log.Fatal(err)
 				}
 			}()
-			log.Println("Server running on :8080")
+			log.Println("Server running on " + addr)
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {

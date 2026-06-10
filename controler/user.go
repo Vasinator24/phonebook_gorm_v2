@@ -23,10 +23,6 @@ func NewUserController(s *services.UserService, l *logger.Logger) *UserControlle
 	}
 }
 
-func (uc *UserController) GetService() *services.UserService {
-	return uc.service
-}
-
 // GET /users
 func (c *UserController) GetUsers(w http.ResponseWriter, r *http.Request) {
 	c.log.Info.Info("GetUsers called")
@@ -40,11 +36,14 @@ func (c *UserController) GetUsers(w http.ResponseWriter, r *http.Request) {
 
 	c.log.Warn.Info("Users successfully fetched")
 
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(users)
 
 }
 
-func (c *UserController) createUser(w http.ResponseWriter, r *http.Request) {
+// POST /users/create
+func (c *UserController) CreateUser(w http.ResponseWriter, r *http.Request) {
 	c.log.Debug.Info("CreateUser request received")
 
 	var user db.User
@@ -80,12 +79,9 @@ func (c *UserController) createUser(w http.ResponseWriter, r *http.Request) {
 
 	c.log.Info.Info("User created successfully")
 
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(user)
-}
-
-// POST /users/create
-func (c *UserController) CreateUser(w http.ResponseWriter, r *http.Request) {
-	c.createUser(w, r)
 }
 
 // PUT /users/update
@@ -135,6 +131,8 @@ func (c *UserController) UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	c.log.Info.Info("user updated successfully")
 
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(user)
 }
 
@@ -163,5 +161,6 @@ func (c *UserController) DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	c.log.Info.Info("user deleted successfully")
 
-	w.WriteHeader(http.StatusNoContent)
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("user deleted"))
 }
