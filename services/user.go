@@ -3,7 +3,6 @@ package services
 import (
 	"phonebook_gorm/db"
 	"phonebook_gorm/repository"
-	"time"
 )
 
 type UserService struct {
@@ -36,16 +35,4 @@ func (s *UserService) DeleteUser(userID uint) error {
 
 func (s *UserService) GetUserByEmail(email string) (*db.User, error) {
 	return s.repo.GetUserByEmail(email)
-}
-
-func (s *UserService) GetUserByID(id uint) (*db.User, error) {
-	return s.repo.GetUserByID(id)
-}
-
-func (s *UserService) BlacklistToken(tokenHash string, expiresAt time.Time) error {
-	return s.repo.BlacklistToken(tokenHash, expiresAt)
-}
-
-func (s *UserService) DeleteExpiredBlacklistedTokens() error {
-	return s.repo.DeleteExpiredBlacklistedTokens()
 }

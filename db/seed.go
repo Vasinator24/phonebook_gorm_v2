@@ -2,9 +2,7 @@ package db
 
 import (
 	"log"
-	"os"
 
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -22,47 +20,33 @@ func Seed(dbConn *gorm.DB) {
 
 	log.Println("Database truncated")
 
-	seedPassword := os.Getenv("SEED_USER_PASSWORD")
-	if seedPassword == "" {
-		log.Fatal("SEED_USER_PASSWORD is not set")
-	}
-
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(seedPassword), bcrypt.DefaultCost)
-	if err != nil {
-		log.Fatal("Password hash failed:", err)
-	}
-
 	users := []User{
 		{
-			Username:     "admin",
-			Email:        "admin@mail.com",
-			Names:        "Admin User",
-			PasswordHash: string(passwordHash),
+			Username: "admin",
+			Email:    "admin@mail.com",
+			Names:    "Admin User",
 		},
 		{
-			Username:     "ivan",
-			Email:        "ivan@mail.com",
-			Names:        "Ivan Ivanov",
-			PasswordHash: string(passwordHash),
+			Username: "ivan",
+			Email:    "ivan@mail.com",
+			Names:    "Ivan Ivanov",
 			Phones: []Phone{
 				{Number: "0888123456"},
 				{Number: "0899123456"},
 			},
 		},
 		{
-			Username:     "george",
-			Email:        "geo@mail.com",
-			Names:        "George Petrov",
-			PasswordHash: string(passwordHash),
+			Username: "george",
+			Email:    "geo@mail.com",
+			Names:    "George Petrov",
 			Phones: []Phone{
 				{Number: "0877123456"},
 			},
 		},
 		{
-			Username:     "maria",
-			Email:        "maria@mail.com",
-			Names:        "Maria Ivanova",
-			PasswordHash: string(passwordHash),
+			Username: "maria",
+			Email:    "maria@mail.com",
+			Names:    "Maria Ivanova",
 		},
 		{
 			Username: "nikolay",
@@ -189,12 +173,6 @@ func Seed(dbConn *gorm.DB) {
 				{Number: "0888000018"},
 			},
 		},
-	}
-
-	for i := range users {
-		if users[i].PasswordHash == "" {
-			users[i].PasswordHash = string(passwordHash)
-		}
 	}
 
 	for _, u := range users {

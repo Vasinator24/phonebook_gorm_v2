@@ -10,7 +10,6 @@ import (
 	controller "phonebook_gorm/controler"
 
 	"go.uber.org/fx"
-	"gorm.io/gorm"
 )
 
 func getServerAddr() string {
@@ -30,11 +29,10 @@ func StartServer(
 	lc fx.Lifecycle,
 	userCtrl *controller.UserController,
 	phoneCtrl *controller.PhoneController,
-	dbConn *gorm.DB,
 ) {
 
 	mux := http.NewServeMux()
-	RegisterRoutes(mux, userCtrl, phoneCtrl, dbConn)
+	RegisterRoutes(mux, userCtrl, phoneCtrl)
 	addr := getServerAddr()
 
 	server := &http.Server{
