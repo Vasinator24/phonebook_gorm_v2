@@ -3,6 +3,7 @@ package repository
 import (
 	"fmt"
 	"phonebook_gorm/db"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -83,6 +84,30 @@ func (s *Service) GetUserByEmail(email string) (*db.User, error) {
 	return &user, nil
 }
 
+func (s *Service) GetUserByID(id uint) (*db.User, error) {
+	var user db.User
+
+	err := s.DB.Preload("Phones").First(&user, id).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func (s *Service) BlacklistToken(tokenHash string, expiresAt time.Time) error {
+	return s.DB.Create(&db.BlacklistedToken{
+		TokenHash: tokenHash,
+		ExpiresAt: expiresAt.Unix(),
+	}).Error
+}
+
+func (s *Service) DeleteExpiredBlacklistedTokens() error {
+	return s.DB.
+		Where("expires_at <= ?", time.Now().Unix()).
+		Delete(&db.BlacklistedToken{}).Error
+}
+
 // CreatePhone
 func (s *Service) CreatePhone(phone *db.Phone) error {
 	return s.DB.Create(phone).Error
@@ -103,6 +128,29 @@ func (s *Service) GetPhonesByUser(userID uint) ([]db.Phone, error) {
 	var phones []db.Phone
 	err := s.DB.Where("user_id = ?", userID).Find(&phones).Error
 	return phones, err
+}
+
+func (s *Service) GetPhones() ([]db.PhoneWithUser, error) {
+	var phones []db.PhoneWithUser
+	err := s.DB.
+		Table("phones").
+		Select("phones.id, phones.user_id, phones.number, users.names AS user_name").
+		Joins("JOIN users ON users.id = phones.user_id").
+		Scan(&phones).Error
+
+	return phones, err
+}
+
+func (s *Service) PhoneExists(number string, excludeID uint) (bool, error) {
+	var count int64
+	query := s.DB.Model(&db.Phone{}).Where("number = ?", number)
+
+	if excludeID != 0 {
+		query = query.Where("id <> ?", excludeID)
+	}
+
+	err := query.Count(&count).Error
+	return count > 0, err
 }
 
 // DeletePhone

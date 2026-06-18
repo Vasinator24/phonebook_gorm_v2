@@ -24,7 +24,7 @@ func NewDB() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	db.AutoMigrate(&User{}, &Phone{})
+	db.AutoMigrate(&User{}, &Phone{}, &BlacklistedToken{})
 
 	log.Println("DB connected successfully")
 
@@ -34,7 +34,7 @@ func NewDB() (*gorm.DB, error) {
 func Migrate(dbConn *gorm.DB) {
 	log.Println("Running migrations...")
 
-	err := dbConn.AutoMigrate(&User{}, &Phone{})
+	err := dbConn.AutoMigrate(&User{}, &Phone{}, &BlacklistedToken{})
 	if err != nil {
 		log.Fatal("Migration failed:", err)
 	}
