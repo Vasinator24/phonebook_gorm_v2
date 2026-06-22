@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"phonebook_gorm/db"
 	"phonebook_gorm/logger"
@@ -43,6 +44,20 @@ func (pc *PhoneController) CreatePhone(w http.ResponseWriter, r *http.Request) {
 	if req.UserID == 0 {
 		pc.log.Error.Error("create phone failed: user_id is required")
 		http.Error(w, "user_id is required", http.StatusBadRequest)
+		return
+	}
+
+	req.Number = strings.TrimSpace(req.Number)
+	exists, err := pc.service.PhoneExists(req.Number, 0)
+	if err != nil {
+		pc.log.Error.Error("failed to check phone number")
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if exists {
+		pc.log.Error.Error("create phone failed: phone number already exists")
+		http.Error(w, "phone number already exists", http.StatusBadRequest)
 		return
 	}
 
@@ -107,6 +122,20 @@ func (pc *PhoneController) UpdatePhone(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	req.Number = strings.TrimSpace(req.Number)
+	exists, err := pc.service.PhoneExists(req.Number, phone.ID)
+	if err != nil {
+		pc.log.Error.Error("failed to check phone number")
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if exists {
+		pc.log.Error.Error("update phone failed: phone number already exists")
+		http.Error(w, "phone number already exists", http.StatusBadRequest)
+		return
+	}
+
 	// UPDATE
 	phone.UserID = req.UserID
 	phone.Number = req.Number
@@ -125,12 +154,25 @@ func (pc *PhoneController) UpdatePhone(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(phone)
 }
 
-// GET PHONES BY USER
-
 func (pc *PhoneController) GetPhonesByUser(w http.ResponseWriter, r *http.Request) {
-	pc.log.Info.Info("GetPhonesByUser called")
+	pc.log.Info.Info("GetPhones called")
 
 	userIDStr := r.URL.Query().Get("user_id")
+	if userIDStr == "" {
+		phones, err := pc.service.GetPhones()
+		if err != nil {
+			pc.log.Error.Error("failed to fetch phones")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		pc.log.Info.Info("phones fetched successfully")
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(phones)
+		return
+	}
 
 	userID, err := strconv.Atoi(userIDStr)
 	if err != nil {

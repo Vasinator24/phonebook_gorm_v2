@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"phonebook_gorm/auth"
 	controller "phonebook_gorm/controler"
 	"phonebook_gorm/db"
 	"phonebook_gorm/logger"
@@ -46,6 +47,8 @@ func runServer() {
 	app := fx.New(
 		fx.Provide(
 			db.NewDB,
+			auth.NewAuthServeConfig,
+			auth.NewAuthServe,
 			repository.NewService,
 			services.NewUserService,
 			controller.NewUserController,

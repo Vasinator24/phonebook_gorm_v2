@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"phonebook_gorm/auth"
 	controller "phonebook_gorm/controler"
 
 	"go.uber.org/fx"
@@ -29,10 +30,11 @@ func StartServer(
 	lc fx.Lifecycle,
 	userCtrl *controller.UserController,
 	phoneCtrl *controller.PhoneController,
+	authServe *auth.AuthServe,
 ) {
 
 	mux := http.NewServeMux()
-	RegisterRoutes(mux, userCtrl, phoneCtrl)
+	RegisterRoutes(mux, userCtrl, phoneCtrl, authServe)
 	addr := getServerAddr()
 
 	server := &http.Server{
