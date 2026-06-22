@@ -17,12 +17,18 @@ import (
 type UserController struct {
 	service *services.UserService
 	log     *logger.Logger
+	auth    *auth.AuthServe
 }
 
-func NewUserController(s *services.UserService, l *logger.Logger) *UserController {
+func NewUserController(
+	s *services.UserService,
+	l *logger.Logger,
+	authServe *auth.AuthServe,
+) *UserController {
 	return &UserController{
 		service: s,
 		log:     l,
+		auth:    authServe,
 	}
 }
 
@@ -136,14 +142,14 @@ func (c *UserController) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := auth.GenerateToken(user.ID)
+	token, err := c.auth.GenerateToken(user.ID)
 	if err != nil {
 		c.log.Error.Error("failed to generate token")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	auth.SetTokenCookie(w, token)
+	c.auth.SetTokenCookie(w, token)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(user)
@@ -156,11 +162,11 @@ func (c *UserController) Logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cookie, err := r.Cookie(auth.CookieName)
+	tokenValue, err := c.auth.TokenFromRequest(r)
 	if err == nil {
-		claims, parseErr := auth.ParseToken(cookie.Value)
+		claims, parseErr := c.auth.ParseToken(tokenValue)
 		if parseErr == nil && claims.ExpiresAt != nil {
-			tokenHash := auth.TokenHash(cookie.Value)
+			tokenHash := c.auth.TokenHash(tokenValue)
 			if err := c.service.BlacklistToken(tokenHash, claims.ExpiresAt.Time); err != nil {
 				c.log.Error.Error("failed to blacklist token")
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -169,13 +175,13 @@ func (c *UserController) Logout(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	auth.ClearTokenCookie(w)
+	c.auth.ClearTokenCookie(w)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("logged out"))
 }
 
 func (c *UserController) Me(w http.ResponseWriter, r *http.Request) {
-	userID, ok := auth.UserIDFromContext(r.Context())
+	userID, ok := c.auth.UserIDFromContext(r.Context())
 	if !ok {
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return

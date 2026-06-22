@@ -5,87 +5,49 @@ import (
 
 	"phonebook_gorm/auth"
 	controller "phonebook_gorm/controler"
-
-	"gorm.io/gorm"
 )
+
+const APIV1 = "/api/v1"
 
 func RegisterRoutes(
 	mux *http.ServeMux,
 	userCtrl *controller.UserController,
 	phoneCtrl *controller.PhoneController,
-	dbConn *gorm.DB,
+	authServe *auth.AuthServe,
 ) {
-	protected := auth.AuthMiddleware(dbConn)
+	apiV1 := NewRouteGroup(mux, APIV1, NewCorsMiddleware())
+	protectedAPIv1 := apiV1.With(authServe.Middleware)
 
-	// AUTH
-	mux.Handle("/login",
-		Cors(http.HandlerFunc(userCtrl.Login)),
-	)
+	registerAuthRoutes(apiV1, protectedAPIv1, userCtrl)
+	registerUserRoutes(protectedAPIv1, userCtrl)
+	registerPhoneRoutes(protectedAPIv1, phoneCtrl)
 
-	mux.Handle("/logout",
-		Cors(protected(http.HandlerFunc(userCtrl.Logout))),
-	)
-
-	mux.Handle("/me",
-		Cors(protected(http.HandlerFunc(userCtrl.Me))),
-	)
-
-	// USERS
-	mux.Handle("/users",
-		Cors(protected(http.HandlerFunc(userCtrl.GetUsers))),
-	)
-
-	mux.Handle("/users/create",
-		Cors(protected(http.HandlerFunc(userCtrl.CreateUser))),
-	)
-
-	mux.Handle("/users/delete",
-		Cors(protected(http.HandlerFunc(userCtrl.DeleteUser))),
-	)
-
-	mux.Handle("/users/update",
-		Cors(protected(http.HandlerFunc(userCtrl.UpdateUser))),
-	)
-
-	// PHONES
-	mux.Handle("/phones",
-		Cors(protected(http.HandlerFunc(phoneCtrl.GetPhonesByUser))),
-	)
-
-	mux.Handle("/phones/create",
-		Cors(protected(http.HandlerFunc(phoneCtrl.CreatePhone))),
-	)
-
-	mux.Handle("/phones/delete",
-		Cors(protected(http.HandlerFunc(phoneCtrl.DeletePhone))),
-	)
-
-	mux.Handle("/phones/update",
-		Cors(protected(http.HandlerFunc(phoneCtrl.UpdatePhone))),
-	)
-
-	// HEALTH
-	mux.Handle("/health",
-		Cors(protected(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("OK"))
-		}))),
-	)
+	protectedAPIv1.Handle("/health", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
+	}))
 }
 
-func Cors(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func registerAuthRoutes(
+	public *RouteGroup,
+	protected *RouteGroup,
+	userCtrl *controller.UserController,
+) {
+	public.Handle("/login", http.HandlerFunc(userCtrl.Login))
+	protected.Handle("/logout", http.HandlerFunc(userCtrl.Logout))
+	protected.Handle("/me", http.HandlerFunc(userCtrl.Me))
+}
 
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
+func registerUserRoutes(group *RouteGroup, userCtrl *controller.UserController) {
+	group.Handle("/users", http.HandlerFunc(userCtrl.GetUsers))
+	group.Handle("/users/create", http.HandlerFunc(userCtrl.CreateUser))
+	group.Handle("/users/delete", http.HandlerFunc(userCtrl.DeleteUser))
+	group.Handle("/users/update", http.HandlerFunc(userCtrl.UpdateUser))
+}
 
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
+func registerPhoneRoutes(group *RouteGroup, phoneCtrl *controller.PhoneController) {
+	group.Handle("/phones", http.HandlerFunc(phoneCtrl.GetPhonesByUser))
+	group.Handle("/phones/create", http.HandlerFunc(phoneCtrl.CreatePhone))
+	group.Handle("/phones/delete", http.HandlerFunc(phoneCtrl.DeletePhone))
+	group.Handle("/phones/update", http.HandlerFunc(phoneCtrl.UpdatePhone))
 }
